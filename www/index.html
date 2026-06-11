@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DMD FUSE</title>
+    <style>
+        body { 
+            margin: 0; padding: 0; 
+            background: #000; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+        }
 
+        /* --- NOUVEAU : Barre de configuration de l'IP --- */
+        #config-bar {
+            background: #1a1a1a; 
+            padding: 10px; 
+            display: flex; 
+            gap: 10px; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            z-index: 9999; 
+            box-sizing: border-box;
+            border-bottom: 2px solid #333;
+        }
+
+        #ip-input {
+            flex: 1; 
+            padding: 8px 12px; 
+            background: #2b2b2b; 
+            color: #fff; 
+            border: 1px solid #444; 
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #connect-btn {
+            padding: 8px 20px; 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        #connect-btn:hover {
+            background: #0062a3;
+        }
+
+        /* Le conteneur qui affiche ton image de backglass */
+        #backglass-container {
+            width: 100vw;
+            height: 100vh;
+            background-image: url('backglass.jpg'); /* PLACE TON IMAGE ICI */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        /* La zone du DMD qui flotte au-dessus, calée en bas */
+        #dmd-wrapper {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            aspect-ratio: 4 / 1;
+            
+            /* -- Le Cadre (Bezel) -- */
+            background: #050505; /* Fond sombre de la cavité */
+            border: 8px solid #333; /* Bordure métallique sombre */
+            border-radius: 6px; /* Coins légèrement arrondis */
+            padding: 8px; /* Espace entre le cadre et l'écran */
+            
+            /* Effet de profondeur (Encastré) */
+            box-shadow: inset 0 0 20px rgba(0,0,0,1), /* Ombre interne pour l'enfoncement */
+                        0 5px 15px rgba(0,0,0,0.5);   /* Ombre externe pour le relief */
+            
+            box-sizing: border-box; /* Important : garde la taille exacte malgré la bordure */
+        }
+
+        #dmdCanvas { 
+            width: 100%; 
+            image-rendering: pixelated; 
+        }
+
+        .led-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px);
+            background-size: calc(100% / 128) calc(100% / 32);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="config-bar">
+        <input type="text" id="ip-input" placeholder="IP du PC (ex: 192.168.1.50)">
+        <button id="connect-btn">Connexion</button>
+    </div>
+
+    <div id="backglass-container">
+        <div id="dmd-wrapper">
+            <canvas id="dmdCanvas" width="128" height="32"></canvas>
+            <div class="led-grid"></div>
+        </div>
+    </div>
+
+    <script src="dmd.js"></script>
+</body>
+</html>
