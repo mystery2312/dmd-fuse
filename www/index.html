@@ -100,86 +100,102 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('deviceready', () => {
-            console.log("Cordova est prêt !");
-        }, false);
+        <script>
+        // On attend que Cordova et l'application soient 100% prêts sur la tablette
+        document.addEventListener('deviceready', initApplication, false);
 
-        const canvas = document.getElementById('dmdCanvas');
-        const ctx = canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
+        // Si on teste sur un navigateur PC où "deviceready" n'existe pas, on lance quand même
+        if (!window.cordova) {
+            window.addEventListener('DOMContentLoaded', initApplication);
+        }
 
-        const imgData = ctx.createImageData(128, 64);
-
-        const ipInput = document.getElementById('ip-input');
-        const connectBtn = document.getElementById('connect-btn');
-        const configBar = document.getElementById('config-bar');
-
-        const savedIP = localStorage.getItem('pincab_ip');
-        if (savedIP) { ipInput.value = savedIP; }
-
-        connectBtn.addEventListener('click', function() {
-            const ip = ipInput.value.trim();
-            if (!ip) {
-                alert("Veuillez saisir l'adresse IP !");
-                return;
-            }
-
-            localStorage.setItem('pincab_ip', ip);
-            configBar.style.display = 'none';
-
-            const PORT_SERVEUR = "8080"; 
-            const urlWS = "ws://" + ip + ":" + PORT_SERVEUR;
+        function initApplication() {
+            console.log("DMD FUSE : L'application est prête !");
             
-            alert("Tentative de connexion à : " + urlWS);
+            const canvas = document.getElementById('dmdCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
 
-            try {
-                const ws = new WebSocket(urlWS);
-                ws.binaryType = "arraybuffer";
+            const imgData = ctx.createImageData(128, 64);
 
-                ws.onopen = function() {
-                    alert("Gagné ! Connecté au DMDServer !");
-                };
+            const ipInput = document.getElementById('ip-input');
+            const connectBtn = document.getElementById('connect-btn');
+            const configBar = document.getElementById('config-bar');
 
-                ws.onmessage = function(event) {
-                    const data = new Uint8Array(event.data);
-                    if (data.length === 12288) {
-                        for (let i = 0; i < 4096; i++) {
-                            const idx = i * 3;
-                            const dest = i * 4;
-                            imgData.data[dest]     = data[idx];
-                            imgData.data[dest + 1] = data[idx + 1];
-                            imgData.data[dest + 2] = data[idx + 2];
-                            imgData.data[dest + 3] = 255;
-                        }
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        const tmp = document.createElement('canvas');
-                        tmp.width = 128; tmp.height = 64;
-                        tmp.getContext('2d').putImageData(imgData, 0, 0);
-                        ctx.drawImage(tmp, 0, 0); 
-                    }
-                };
-
-                ws.onerror = function(error) {
-                    alert("Erreur de connexion. Vérifie le pare-feu PC et l'IP.");
-                    configBar.style.display = 'flex';
-                };
-
-                ws.onclose = function(e) {
-                    alert("Connexion fermée (Code: " + e.code + ").");
-                    configBar.style.display = 'flex';
-                };
-
-            } catch(err) {
-                alert("Crash création WebSocket : " + err.message);
-                configBar.style.display = 'flex';
+            // Récupère l'ancienne IP
+            const savedIP = localStorage.getItem('pincab_ip');
+            if (savedIP) { 
+                ipInput.value = savedIP; 
             }
-        });
+
+            // On attache l'événement au bouton SEULEMENT quand l'application est prête
+            connectBtn.onclick = function() {
+                const ip = ipInput.value.trim();
+                if (!ip) {
+                    alert("Veuillez saisir l'adresse IP !");
+                    return;
+                }
+
+                localStorage.setItem('pincab_ip', ip);
+                configBar.style.display = 'none';
+
+                const PORT_SERVEUR = "8080"; 
+                const urlWS = "ws://" + ip + ":" + PORT_SERVEUR;
+                
+                alert("Action : Tentative de connexion à : " + urlWS);
+
+                try {
+                    const ws = new WebSocket(urlWS);
+                    ws.binaryType = "arraybuffer";
+
+                    ws.onopen = function() {
+                        alert("Gagné ! Connecté au DMDServer !");
+                    };
+
+                    ws.onmessage = function(event) {
+                        const data = new Uint8Array(event.data);
+                        if (data.length === 12288) {
+                            for (let i = 0; i < 4096; i++) {
+                                const idx = i * 3;
+                                const dest = i * 4;
+                                imgData.data[dest]     = data[idx];
+                                imgData.data[dest + 1] = data[idx + 1];
+                                imgData.data[dest + 2] = data[idx + 2];
+                                imgData.data[dest + 3] = 255;
+                            }
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            const tmp = document.createElement('canvas');
+                            tmp.width = 128; tmp.height = 64;
+                            tmp.getContext('2d').putImageData(imgData, 0, 0);
+                            ctx.drawImage(tmp, 0, 0); 
+                        }
+                    };
+
+                    ws.onerror = function(error) {
+                        alert("Erreur réseau ! Vérifie le port 8080 sur ton PC.");
+                        configBar.style.display = 'flex';
+                    };
+
+                    ws.onclose = function(e) {
+                        alert("Connexion fermée (Code: " + e.code + ").");
+                        configBar.style.display = 'flex';
+                    };
+
+                } catch(err) {
+                    alert("Crash création de la connexion : " + err.message);
+                    configBar.style.display = 'flex';
+                }
+            };
+        }
 
         window.addEventListener('touchstart', function(e) {
-            if (e.touches.length === 3) { configBar.style.display = 'flex'; }
+            const configBar = document.getElementById('config-bar');
+            if (e.touches.length === 3 && configBar) { 
+                configBar.style.display = 'flex'; 
+            }
         });
     </script>
+
 </body>
 </html>
             border-radius: 4px;
