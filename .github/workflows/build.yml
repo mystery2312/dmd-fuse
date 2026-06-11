@@ -32,8 +32,9 @@ jobs:
           rm -rf build_folder/www
           cp -r www build_folder/www
           
-          # Injection automatique du config.xml pour le plein écran et le réseau local
           cd build_folder
+          
+          # Configuration standard du config.xml
           echo '<?xml version="1.0" encoding="utf-8"?>
           <widget id="com.pincab.dmdfuse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
               <name>DMD FUSE</name>
@@ -43,12 +44,13 @@ jobs:
               <allow-navigation href="http://*/*" />
               <preference name="Orientation" value="landscape" />
               <preference name="Fullscreen" value="true" />
-              <edit-config href="---/*" id="AndroidManifest.xml" mode="merge" target="app/src/main/AndroidManifest.xml">
-                  <application android:usesCleartextTraffic="true" />
-              </edit-config>
           </widget>' > config.xml
 
           cordova platform add android
+          
+          # LE CORRECTIF : On installe le plugin officiel pour autoriser le HTTP/WS en clair
+          cordova plugin add cordova-plugin-cleartext
+          
           cordova build android --device
 
       - name: Upload Finished APK
