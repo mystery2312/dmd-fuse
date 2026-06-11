@@ -32,13 +32,17 @@ connectBtn.addEventListener('click', () => {
     // Cache la barre de saisie pour laisser place nette à la backglass
     configBar.style.display = 'none';
 
-    // Initialisation du WebSocket sur le port dynamique 8090
-    const PORT_SERVEUR = "8080"; // Mets 8080 ou 8090 selon ton config.json du PC
-    const ws = new WebSocket(`ws://${ip}:${PORT_SERVEUR}`);
+    // Initialisation du WebSocket sur le port configuré 8080
+    const PORT_SERVEUR = "8080"; 
+    const urlWebSocket = `ws://${ip}:${PORT_SERVEUR}`;
+    
+    console.log(`Tentative de connexion à : ${urlWebSocket}`);
+    const ws = new WebSocket(urlWebSocket);
     ws.binaryType = "arraybuffer";
 
     ws.onopen = () => {
         console.log("🚀 Connecté avec succès au DMDServer !");
+        alert("Succès : Connecté au DMDServer !");
     };
 
     ws.onmessage = (event) => {
@@ -71,12 +75,19 @@ connectBtn.addEventListener('click', () => {
 
     ws.onerror = (error) => {
         console.error("Erreur WebSocket:", error);
-        alert("Impossible de se connecter au PC. Vérifiez l'IP et que DMDServer.exe est lancé !");
+        
+        // Alerte contenant les détails techniques de l'erreur réseau
+        alert(`Erreur de connexion !\nCible : ${urlWebSocket}\nDétails : ${JSON.stringify(error) || "Bloqué par la sécurité Android (CSP/Cleartext)"}`);
+        
         configBar.style.display = 'flex'; // Réaffiche la barre en cas d'erreur
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
         console.log("Connexion perdue avec le serveur.");
+        
+        // Indique si le serveur a coupé la ligne ou si la tablette a rejeté l'accès
+        alert(`Connexion fermée.\nCode : ${event.code}\nRaison : ${event.reason || "Inconnue (Pare-feu ou Wi-Fi déconnecté)"}`);
+        
         configBar.style.display = 'flex'; // Réaffiche la barre si le serveur se coupe
     };
 });
