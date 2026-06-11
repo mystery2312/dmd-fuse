@@ -13,15 +13,13 @@
             font-family: Arial, sans-serif;
         }
 
-        /* --- NOUVEAU : Barre de configuration de l'IP --- */
         #config-bar {
             background: #1a1a1a; 
             padding: 10px; 
             display: flex; 
             gap: 10px; 
             position: absolute; 
-            top: 0; 
-            left: 0; 
+            top: 0; left: 0; 
             width: 100%; 
             z-index: 9999; 
             box-sizing: border-box;
@@ -34,6 +32,156 @@
             background: #2b2b2b; 
             color: #fff; 
             border: 1px solid #444; 
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #connect-btn {
+            padding: 8px 20px; 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        #backglass-container {
+            width: 100vw;
+            height: 100vh;
+            background-image: url('backglass.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        #dmd-wrapper {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            aspect-ratio: 4 / 1;
+            background: #050505;
+            border: 8px solid #333;
+            border-radius: 6px;
+            padding: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1), 0 5px 15px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        #dmdCanvas { 
+            width: 100%; 
+            image-rendering: pixelated; 
+        }
+
+        .led-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px);
+            background-size: calc(100% / 128) calc(100% / 32);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="config-bar">
+        <input type="text" id="ip-input" placeholder="IP du PC (ex: 192.168.1.50)">
+        <button id="connect-btn">Connexion</button>
+    </div>
+
+    <div id="backglass-container">
+        <div id="dmd-wrapper">
+            <canvas id="dmdCanvas" width="128" height="32"></canvas>
+            <div class="led-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('deviceready', () => {
+            console.log("Cordova est prêt !");
+        }, false);
+
+        const canvas = document.getElementById('dmdCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        const imgData = ctx.createImageData(128, 64);
+
+        const ipInput = document.getElementById('ip-input');
+        const connectBtn = document.getElementById('connect-btn');
+        const configBar = document.getElementById('config-bar');
+
+        const savedIP = localStorage.getItem('pincab_ip');
+        if (savedIP) { ipInput.value = savedIP; }
+
+        connectBtn.addEventListener('click', function() {
+            const ip = ipInput.value.trim();
+            if (!ip) {
+                alert("Veuillez saisir l'adresse IP !");
+                return;
+            }
+
+            localStorage.setItem('pincab_ip', ip);
+            configBar.style.display = 'none';
+
+            const PORT_SERVEUR = "8080"; 
+            const urlWS = "ws://" + ip + ":" + PORT_SERVEUR;
+            
+            alert("Tentative de connexion à : " + urlWS);
+
+            try {
+                const ws = new WebSocket(urlWS);
+                ws.binaryType = "arraybuffer";
+
+                ws.onopen = function() {
+                    alert("Gagné ! Connecté au DMDServer !");
+                };
+
+                ws.onmessage = function(event) {
+                    const data = new Uint8Array(event.data);
+                    if (data.length === 12288) {
+                        for (let i = 0; i < 4096; i++) {
+                            const idx = i * 3;
+                            const dest = i * 4;
+                            imgData.data[dest]     = data[idx];
+                            imgData.data[dest + 1] = data[idx + 1];
+                            imgData.data[dest + 2] = data[idx + 2];
+                            imgData.data[dest + 3] = 255;
+                        }
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        const tmp = document.createElement('canvas');
+                        tmp.width = 128; tmp.height = 64;
+                        tmp.getContext('2d').putImageData(imgData, 0, 0);
+                        ctx.drawImage(tmp, 0, 0); 
+                    }
+                };
+
+                ws.onerror = function(error) {
+                    alert("Erreur de connexion. Vérifie le pare-feu PC et l'IP.");
+                    configBar.style.display = 'flex';
+                };
+
+                ws.onclose = function(e) {
+                    alert("Connexion fermée (Code: " + e.code + ").");
+                    configBar.style.display = 'flex';
+                };
+
+            } catch(err) {
+                alert("Crash création WebSocket : " + err.message);
+                configBar.style.display = 'flex';
+            }
+        });
+
+        window.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 3) { configBar.style.display = 'flex'; }
+        });
+    </script>
+</body>
+</html>
             border-radius: 4px;
             font-size: 16px;
         }
