@@ -1,0 +1,48 @@
+name: Build DMD FUSE APK
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-size: 18
+
+      - name: Install Cordova & Global Tools
+        run: |
+          npm install -g cordova
+
+      - name: Create Cordova Project
+        run: |
+          cordova create build_folder com.pincab.dmdfuse "DMD FUSE"
+          rm -rf build_folder/www
+          cp -r www build_folder/www
+
+      - name: Setup Android SDK & Build Tools
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Inject Configuration (Cleartext Traffic)
+        run: |
+          cd build_folder
+          cordova platform add android
+          # Script pour forcer le cleartext réseau pour le port 8080 sans plugin tiers
+          sed -i 's/<application/<application android:usesCleartextTraffic="true"/g' platforms/android/app/src/main/AndroidManifest.xml
+          cordova build android --device
+
+      - name: Upload Finished APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DMD-FUSE-Application
+          path: build_folder/platforms/android/app/build/outputs/apk/debug/app-debug.apk
