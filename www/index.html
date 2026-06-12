@@ -334,16 +334,6 @@
             });
         }
 
-document.addEventListener('deviceready', function() {
-    // On s'assure que le plugin existe et on masque l'écran de démarrage
-    if (navigator.splashscreen) {
-        // Un court délai (ex: 500ms) permet une transition fluide 
-        // entre le splashscreen natif et l'affichage de votre page web
-        setTimeout(function() {
-            navigator.splashscreen.hide();
-        }, 500);
-    }
-}, false);
     </script>
 </body>
 </html>
