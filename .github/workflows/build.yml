@@ -70,9 +70,8 @@ jobs:
           
           cordova build android
 
-            - name: Upload Finished APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: DMD-FUSE-Application
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
-
