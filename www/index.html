@@ -14,7 +14,6 @@
             user-select: none;
         }
 
-        /* --- Barre de configuration de l'IP --- */
         #config-bar {
             background: #1a1a1a; 
             padding: 10px; 
@@ -54,7 +53,6 @@
             background: #0062a3;
         }
 
-        /* Le conteneur qui affiche ton image de backglass */
         #backglass-container {
             width: 100vw;
             height: 100vh;
@@ -64,7 +62,6 @@
             position: relative;
         }
 
-        /* La zone du DMD qui flotte au-dessus, calée en bas */
         #dmd-wrapper {
             position: absolute;
             bottom: 5%;
@@ -73,13 +70,10 @@
             width: 80%;
             aspect-ratio: 4 / 1;
             
-            /* -- Le Cadre (Bezel) -- */
             background: #050505; 
             border: 8px solid #333; 
             border-radius: 6px; 
             padding: 8px; 
-            
-            /* Effet de profondeur (Encastré) */
             box-shadow: inset 0 0 20px rgba(0,0,0,1), 
                         0 5px 15px rgba(0,0,0,0.5);   
             
@@ -100,7 +94,6 @@
             pointer-events: none;
         }
 
-        /* --- NOUVEAU : Bouton Paramètres ⚙️ --- */
         #settings-btn {
             position: absolute;
             bottom: 15px;
@@ -187,25 +180,23 @@
 
     <div id="settings-modal" class="modal">
         <div class="modal-content">
-            <h3>Configuration DMD FUSE</h3>
-            <p>Sélectionnez une image pour le Backglass :</p>
+            <h3>DMD FUSE Settings</h3>
+            <p>Select an image for Backglass :</p>
             
             <div class="file-input-wrapper">
                 <input type="file" id="bg-file-input" accept="image/*">
             </div>
 
-            <button id="modal-reset-btn" class="modal-btn btn-reset">Réinitialiser (Image par défaut)</button>
-            <button id="modal-close-btn" class="modal-btn btn-close">Fermer</button>
+            <button id="modal-reset-btn" class="modal-btn btn-reset">Reset (Default Image)</button>
+            <button id="modal-close-btn" class="modal-btn btn-close">Close</button>
         </div>
     </div>
 
     <script src="cordova.js"></script>
 
     <script>
-        // Attente du chargement complet de l'application
         document.addEventListener('deviceready', initApplication, false);
 
-        // Fallback si testé sur un navigateur PC 
         if (!window.cordova) {
             window.addEventListener('DOMContentLoaded', initApplication);
         }
@@ -215,61 +206,51 @@
             const ctx = canvas.getContext('2d');
             const VERTICAL_OFFSET = 0;
 
-            // Important : pas de lissage pour garder le style rétro
             ctx.imageSmoothingEnabled = false;
 
-            // Calé sur 128x32 (4096 pixels) pour éviter le crash Android
             const imgData = ctx.createImageData(128, 32);
 
-            // --- ÉLÉMENTS DE L'INTERFACE APPLICATION ---
             const ipInput = document.getElementById('ip-input');
             const connectBtn = document.getElementById('connect-btn');
             const configBar = document.getElementById('config-bar');
             const backglassContainer = document.getElementById('backglass-container');
 
-            // 1. Restaurer le backglass personnalisé s'il existe
             const savedBG = localStorage.getItem('pincab_backglass');
             if (savedBG) {
                 backglassContainer.style.backgroundImage = `url('${savedBG}')`;
             }
 
-            // 2. Charger automatiquement l'IP sauvegardée
             const savedIP = localStorage.getItem('pincab_ip');
             if (savedIP) {
                 ipInput.value = savedIP;
             }
 
-            // --- CONNEXION WEBSOCKET ---
             connectBtn.addEventListener('click', () => {
                 const ip = ipInput.value.trim();
                 if (!ip) {
-                    alert("Veuillez saisir l'adresse IP de votre PC !");
+                    alert("Enter your pc's ip adress !");
                     return;
                 }
 
-                // Sauvegarde en mémoire locale
                 localStorage.setItem('pincab_ip', ip);
                 configBar.style.display = 'none';
 
                 const PORT_SERVEUR = "8080"; 
                 const targetUrl = `ws://${ip}:${PORT_SERVEUR}`;
                 
-                // NOTIFICATION : Lancement de la connexion
-                alert("Tentative de connexion vers :\n" + targetUrl);
+                alert("Trying to connect to :\n" + targetUrl);
 
                 try {
                     const ws = new WebSocket(targetUrl);
                     ws.binaryType = "arraybuffer";
 
                     ws.onopen = () => {
-                        // NOTIFICATION : Succès
-                        alert("✅ Connecté avec succès au DMDServer !");
+                        alert("✅ Connexion sucess to DMD FUSE Server !");
                     };
 
                     ws.onmessage = (event) => {
                         const data = new Uint8Array(event.data);
                         
-                        // Si la donnée n'est pas 12288, on ne fait rien
                         if (data.length === 12288) {
                             for (let i = 0; i < 4096; i++) {
                                 const idx = i * 3;
@@ -291,41 +272,35 @@
                     };
 
                     ws.onerror = (error) => {
-                        // NOTIFICATION : Erreur avec l'IP ciblée
-                        alert(`❌ Impossible de se connecter !\nVérifiez l'IP (${ip}) et que DMDServer est lancé sur le port ${PORT_SERVEUR}.`);
+                        alert(`❌ Impossible to connect !\nCheck the IP (${ip}) and ensure that the DMD FUSE Server is running on the port ${PORT_SERVEUR}.`);
                         configBar.style.display = 'flex'; 
                     };
 
                     ws.onclose = (event) => {
-                        // NOTIFICATION : Déconnexion
-                        alert(`🔌 Connexion fermée ou perdue avec le serveur (Code: ${event.code}).`);
+                        alert(`🔌 Connection to the server closed or lost. (Code: ${event.code}).`);
                         configBar.style.display = 'flex'; 
                     };
 
                 } catch(err) {
-                    alert("Erreur critique de l'application : " + err.message);
+                    alert("Critical application error: " + err.message);
                     configBar.style.display = 'flex';
                 }
             });
 
-            // --- GESTION DE LA MODAL ET DE LA SAUVEGARDE DU BACKGLASS ---
             const modal = document.getElementById('settings-modal');
             const settingsBtn = document.getElementById('settings-btn');
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const modalResetBtn = document.getElementById('modal-reset-btn');
             const bgFileInput = document.getElementById('bg-file-input');
 
-            // Ouvrir la boîte
             settingsBtn.addEventListener('click', () => {
                 modal.style.display = 'flex';
             });
 
-            // Fermer la boîte
             modalCloseBtn.addEventListener('click', () => {
                 modal.style.display = 'none';
             });
 
-            // Charger et encoder la nouvelle image
             bgFileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -334,28 +309,24 @@
                 reader.onload = (event) => {
                     const base64Image = event.target.result;
                     
-                    // Applique l'image en fond immédiatement
                     backglassContainer.style.backgroundImage = `url('${base64Image}')`;
                     
-                    // Tente de sauvegarder dans la tablette
                     try {
                         localStorage.setItem('pincab_backglass', base64Image);
                     } catch(error) {
-                        alert("Attention : L'image sélectionnée est trop volumineuse pour être sauvegardée de façon permanente. Essayez avec un fichier plus léger.");
+                        alert("Warning: The selected image is too large to save permanently. Please try a smaller file.");
                     }
                 };
                 reader.readAsDataURL(file);
             });
 
-            // Bouton de réinitialisation vers l'image native
             modalResetBtn.addEventListener('click', () => {
                 localStorage.removeItem('pincab_backglass');
                 backglassContainer.style.backgroundImage = "url('backglass.jpg')";
                 modal.style.display = 'none';
-                bgFileInput.value = ""; // Réinitialise l'input
+                bgFileInput.value = "";
             });
 
-            // ASTUCE : Réapparaître la barre de config avec 3 doigts
             window.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 3) {
                     configBar.style.display = 'flex';
