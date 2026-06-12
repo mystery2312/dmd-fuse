@@ -39,7 +39,7 @@ jobs:
           
           cd build_folder
           
-          # Configuration du config.xml AVEC ICÔNE, SPLASHSCREEN ET CORRECTIF HTTP
+          # Configuration du config.xml AVEC ICÔNE ET CORRECTIF HTTP (sans splashscreen)
           echo '<?xml version="1.0" encoding="utf-8"?>
           <widget id="com.pincab.dmdfuse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
               <name>DMD FUSE</name>
@@ -60,19 +60,13 @@ jobs:
 
               <platform name="android">
                   <icon src="logo.png" />
-                  <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
-                  <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
-                  <preference name="ShowSplashScreen" value="true" />
-                  <preference name="AutoHideSplashScreen" value="true" />
-                  <preference name="SplashScreenDelay" value="3000" />
               </platform>
           </widget>' > config.xml
 
           cordova platform add android
           
-          # On garde le plugin en sécurité supplémentaire et on ajoute le splashscreen
+          # On garde uniquement le plugin de sécurité HTTP/cleartext
           cordova plugin add cordova-plugin-cleartext
-          cordova plugin add cordova-plugin-splashscreen
           
           cordova build android
 
