@@ -54,19 +54,24 @@ jobs:
               <preference name="scheme" value="http" />
               <preference name="hostname" value="localhost" />
               
-              <icon src="logo.png" />
-              <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
-              <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
-              
               <edit-config href="---/*" id="AndroidManifest.xml" mode="merge" target="app/src/main/AndroidManifest.xml">
                   <application android:usesCleartextTraffic="true" />
               </edit-config>
+
+              <platform name="android">
+                  <icon src="logo.png" />
+                  <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
+                  <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
+                  <preference name="ShowSplashScreen" value="true" />
+                  <preference name="AutoHideSplashScreen" value="false" />
+              </platform>
           </widget>' > config.xml
 
           cordova platform add android
           
-          # On garde le plugin en sécurité supplémentaire
+          # On garde le plugin en sécurité supplémentaire et on ajoute le splashscreen
           cordova plugin add cordova-plugin-cleartext
+          cordova plugin add cordova-plugin-splashscreen
           
           cordova build android
 
