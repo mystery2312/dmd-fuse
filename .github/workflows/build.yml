@@ -54,7 +54,7 @@ jobs:
               <preference name="scheme" value="http" />
               <preference name="hostname" value="localhost" />
               
-              <edit-config href="---/*" id="AndroidManifest.xml" mode="merge" target="app/src/main/AndroidManifest.xml">
+              <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application" mode="merge">
                   <application android:usesCleartextTraffic="true" />
               </edit-config>
 
