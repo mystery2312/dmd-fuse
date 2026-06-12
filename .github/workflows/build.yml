@@ -68,7 +68,7 @@ jobs:
           # On garde le plugin en sécurité supplémentaire
           cordova plugin add cordova-plugin-cleartext
           
-          cordova build android --device
+          cordova build android
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
