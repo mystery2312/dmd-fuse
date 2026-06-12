@@ -32,9 +32,14 @@ jobs:
           rm -rf build_folder/www
           cp -r www build_folder/www
           
+          # COPIE DU LOGO DANS LE DOSSIER DE BUILD
+          if [ -f "logo.png" ]; then
+            cp logo.png build_folder/logo.png
+          fi
+          
           cd build_folder
           
-          # Configuration du config.xml AVEC LE CORRECTIF HTTP (Scheme/Hostname)
+          # Configuration du config.xml AVEC ICÔNE, SPLASHSCREEN ET CORRECTIF HTTP
           echo '<?xml version="1.0" encoding="utf-8"?>
           <widget id="com.pincab.dmdfuse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
               <name>DMD FUSE</name>
@@ -48,6 +53,10 @@ jobs:
               
               <preference name="scheme" value="http" />
               <preference name="hostname" value="localhost" />
+              
+              <icon src="logo.png" />
+              <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
+              <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
               
               <edit-config href="---/*" id="AndroidManifest.xml" mode="merge" target="app/src/main/AndroidManifest.xml">
                   <application android:usesCleartextTraffic="true" />
