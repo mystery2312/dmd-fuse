@@ -63,7 +63,8 @@ jobs:
                   <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
                   <preference name="AndroidWindowSplashScreenBackground" value="#000000" />
                   <preference name="ShowSplashScreen" value="true" />
-                  <preference name="AutoHideSplashScreen" value="false" />
+                  <preference name="AutoHideSplashScreen" value="true" />
+                  <preference name="SplashScreenDelay" value="3000" />
               </platform>
           </widget>' > config.xml
 
