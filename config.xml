@@ -19,6 +19,9 @@
     <preference name="Fullscreen" value="true" />
     <preference name="BackgroundColor" value="#000000" />
 
+    <preference name="scheme" value="http" />
+    <preference name="hostname" value="localhost" />
+
     <platform name="android">
         <icon src="logo.png" />
     </platform>
