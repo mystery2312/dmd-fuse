@@ -39,7 +39,7 @@ jobs:
           
           cd build_folder
           
-          # Configuration du config.xml AVEC ICÔNE ET CORRECTIF HTTP (sans splashscreen)
+          # Configuration du config.xml corrigée (edit-config dans la balise platform)
           echo '<?xml version="1.0" encoding="utf-8"?>
           <widget id="com.pincab.dmdfuse" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
               <name>DMD FUSE</name>
@@ -53,12 +53,11 @@ jobs:
               
               <preference name="scheme" value="http" />
               <preference name="hostname" value="localhost" />
-              
-              <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application" mode="merge">
-                  <application android:usesCleartextTraffic="true" />
-              </edit-config>
 
               <platform name="android">
+                  <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application" mode="merge">
+                      <application android:usesCleartextTraffic="true" />
+                  </edit-config>
                   <icon src="logo.png" />
               </platform>
           </widget>' > config.xml
