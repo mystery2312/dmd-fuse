@@ -57,7 +57,7 @@
             width: 100vw;
             height: 100vh;
             background-image: url('backglass2.jpg'); 
-            background-size: cover;
+            background-size: cover; /* RETOUR À LA NORMALE : remplit tout l'écran */
             background-position: center;
             position: relative;
         }
@@ -113,7 +113,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        /* --- NOUVEAU : Fenêtre Modal de Configuration --- */
+        /* --- Fenêtre Modal de Configuration --- */
         .modal {
             display: none; 
             position: fixed;
@@ -144,8 +144,43 @@
             color: #007acc;
         }
 
+        .presets-container {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 15px;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        
+        .presets-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .preset-img {
+            width: 100px;
+            height: 75px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: border-color 0.2s;
+        }
+
+        .preset-img:hover, .preset-img:active {
+            border-color: #007acc;
+        }
+
+        .modal-divider {
+            margin: 15px 0;
+            border-top: 1px solid #444;
+        }
+
         .file-input-wrapper {
-            margin: 20px 0;
+            margin: 15px 0 25px 0;
         }
 
         .modal-btn {
@@ -181,13 +216,22 @@
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <h3>DMD FUSE Settings</h3>
-            <p>Select an image for Backglass :</p>
             
+            <p style="margin-bottom: 5px; font-size: 14px;">Select a classic table:</p>
+            <div class="presets-container">
+                <div class="preset-img" style="background-image: url('monster_bash.jpg');" data-bg="monster_bash.jpg"></div>
+                <div class="preset-img" style="background-image: url('attack_from_mars.jpg');" data-bg="attack_from_mars.jpg"></div>
+                <div class="preset-img" style="background-image: url('addams_family.jpg');" data-bg="addams_family.jpg"></div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <p style="margin-bottom: 5px; font-size: 14px;">Or upload custom Backglass:</p>
             <div class="file-input-wrapper">
                 <input type="file" id="bg-file-input" accept="image/*">
             </div>
 
-            <button id="modal-reset-btn" class="modal-btn btn-reset">Reset (Default Image)</button>
+            <button id="modal-reset-btn" class="modal-btn btn-reset">Reset (Default)</button>
             <button id="modal-close-btn" class="modal-btn btn-close">Close</button>
         </div>
     </div>
@@ -293,6 +337,20 @@
             const modalResetBtn = document.getElementById('modal-reset-btn');
             const bgFileInput = document.getElementById('bg-file-input');
 
+            // --- Gestion du clic sur les miniatures prédéfinies ---
+            const presets = document.querySelectorAll('.preset-img');
+            presets.forEach(preset => {
+                preset.addEventListener('click', (e) => {
+                    const bgUrl = e.target.getAttribute('data-bg');
+                    backglassContainer.style.backgroundImage = `url('${bgUrl}')`;
+                    try {
+                        localStorage.setItem('pincab_backglass', bgUrl);
+                    } catch(error) {
+                        console.error("Error saving preset", error);
+                    }
+                });
+            });
+
             settingsBtn.addEventListener('click', () => {
                 modal.style.display = 'flex';
             });
@@ -322,7 +380,7 @@
 
             modalResetBtn.addEventListener('click', () => {
                 localStorage.removeItem('pincab_backglass');
-                backglassContainer.style.backgroundImage = "url('backglass.jpg')";
+                backglassContainer.style.backgroundImage = "url('backglass2.jpg')";
                 modal.style.display = 'none';
                 bgFileInput.value = "";
             });
@@ -336,4 +394,4 @@
 
     </script>
 </body>
-</html>
+</html>2
