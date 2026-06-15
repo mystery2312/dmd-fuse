@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMD FUSE - Android Pinball Display</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <style>
+        /* Couleurs adaptées à tes visuels (Orange Fusée / Bleu Électrique) */
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: #151821;
+            --accent-color: #ff5e00; 
+            --accent-hover: #cc4a00;
+            --text-main: #f0f0f0;
+            --text-muted: #9ba4b5;
+            --border-glow: rgba(255, 94, 0, 0.4);
+            --neon-blue: #00e5ff; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        /* --- HEADER & NAV --- */
+        header {
+            background: rgba(11, 12, 16, 0.9);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 94, 0, 0.2);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 50px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px var(--border-glow));
+            transition: transform 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover { color: var(--accent-color); }
+
+        /* --- SELECTEUR DE LANGUE --- */
+        .lang-switch {
+            margin-left: 2rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .lang-switch span {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .lang-switch span.active {
+            color: var(--accent-color);
+            text-shadow: 0 0 8px var(--border-glow);
+        }
+        
+        .lang-switch span:hover { color: var(--text-main); }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            position: relative;
+            padding: 180px 2rem 120px;
+            text-align: center;
+            background-image: linear-gradient(rgba(11, 12, 16, 0.8), rgba(11, 12, 16, 0.95)), url('hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero h1 span {
+            color: var(--accent-color);
+            text-shadow: 0 0 15px var(--border-glow);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: #ddd;
+            margin-bottom: 2.5rem;
+            max-width: 750px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 35px;
+            background-color: var(--accent-color);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--border-glow);
+            border: 1px solid transparent;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 94, 0, 0.6);
+        }
+
+        .btn-outline {
+            background-color: rgba(11, 12, 16, 0.6);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            margin-left: 1rem;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(0, 229, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        }
+
+        /* --- SECTIONS --- */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        /* --- SHOWCASE --- */
+        .showcase-container {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .showcase-text { flex: 1; }
+        .showcase-text h3 {
+            font-size: 2rem;
+            color: var(--neon-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .showcase-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .showcase-image img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px var(--border-glow);
+            border: 2px solid #333;
+        }
+
+        /* --- FEATURES GRID --- */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--surface-color);
+            padding: 2.5rem;
+            border-radius: 8px;
+            border: 1px solid #222;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: var(--border-glow);
+        }
+
+        .feature-card h3 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* --- DOCS --- */
+        .doc-block {
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .terminal {
+            background: #000;
+            padding: 1.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ff00;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border: 1px solid #333;
+        }
+
+        .step-list { list-style-position: inside; color: var(--text-muted); }
+        .step-list li { margin-bottom: 1rem; }
+        .step-list strong { color: var(--text-main); }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--surface-color);
+            border-top: 1px solid #222;
+            color: var(--text-muted);
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 900px) { .showcase-container { flex-direction: column; } }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.8rem; }
+            .nav-links { display: none; }
+            .btn-outline { margin-left: 0; margin-top: 1rem; display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="#"><img src="logo.png" alt="DMD FUSE Logo" class="logo-img"></a>
+            <div class="nav-right">
+                <div class="nav-links">
+                    <a href="#about" data-i18n="nav_about">Le Projet</a>
+                    <a href="#docs" data-i18n="nav_docs">Installation</a>
+                    <a href="#download" data-i18n="nav_download">Télécharger</a>
+                </div>
+                <div class="lang-switch">
+                    <span id="btn-fr" class="active" onclick="setLang('fr')">FR</span> | 
+                    <span id="btn-en" onclick="setLang('en')">EN</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1 data-i18n="hero_title">Allumez votre <span>DMD</span>.</h1>
+        <p data-i18n="hero_subtitle">L'interface Pincab ultime pour Android. Capturez le flux TCP brut de VPX Standalone et affichez vos matrices LED en temps réel avec un habillage custom de haute qualité.</p>
+        <div style="margin-top: 2rem;">
+            <a href="#download" class="btn" data-i18n="btn_dl_apk">Télécharger l'APK</a>
+            <a href="#docs" class="btn btn-outline" data-i18n="btn_docs">Voir la Doc</a>
+        </div>
+    </section>
+
+    <section id="about">
+        <div class="showcase-container">
+            <div class="showcase-text">
+                <h3 data-i18n="about_title">Conçu pour l'immersion</h3>
+                <p style="margin-bottom: 1rem;" data-i18n="about_p1">DMD FUSE n'est pas qu'un simple afficheur. C'est le cœur visuel de votre borne d'arcade Android ou de votre setup Samsung DeX.</p>
+                <p data-i18n="about_p2">Grâce à son serveur Node.js ultra-léger et son interprétation chirurgicale des paquets, les animations s'affichent avec une latence quasi-nulle, laissant le CPU libre pour la physique de votre bille.</p>
+            </div>
+            <div class="showcase-image">
+                <img src="showcase.png" alt="DMD FUSE Mechanical Backglass">
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3 data-i18n="feat1_title">⚡ TCP vers WebSockets</h3>
+                <p data-i18n="feat1_desc">Traduction en direct du signal natif de Visual Pinball X pour une intégration parfaite dans un WebView Android optimisé.</p>
+            </div>
+            <div class="feature-card">
+                <h3 data-i18n="feat2_title">📺 Standard & HD Ready</h3>
+                <p data-i18n="feat2_desc">Basculez entre l'affichage matrice classique (128x32) et le format ColorDMD moderne (256x64) d'une simple pression sur l'écran.</p>
+            </div>
+            <div class="feature-card">
+                <h3 data-i18n="feat3_title">🎨 Personnalisation Totale</h3>
+                <p data-i18n="feat3_desc">Uploadez vos propres backglasses (statiques ou animations MP4/GIF) directement depuis l'application pour habiller votre fronton.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="docs">
+        <h2 class="section-title" data-i18n="doc_title">Guide d'installation pas-à-pas</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;" data-i18n="doc_subtitle">
+            Ce guide est conçu pour une installation <strong>100% Android</strong> (VPX Standalone + DMD FUSE sur le même appareil). Pas de panique si vous n'avez jamais codé, il suffit de suivre les étapes dans l'ordre !
+        </p>
+        
+        <div class="doc-block">
+            <h3 style="color: var(--accent-color); margin-bottom: 1rem;" data-i18n="doc_s1_title">Étape 1 : Empêcher Android de couper le système</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;" data-i18n="doc_s1_desc">Android est programmé pour tuer les applications en arrière-plan afin d'économiser de la batterie. Il faut lui dire de laisser notre serveur tranquille.</p>
+            <ul class="step-list">
+                <li data-i18n="doc_s1_l1">Allez dans les <strong>Paramètres</strong> de votre appareil Android, puis dans <strong>Applications</strong>.</li>
+                <li data-i18n="doc_s1_l2">Cherchez et sélectionnez l'application <strong>Termux</strong> (que nous allons installer à l'étape suivante).</li>
+                <li data-i18n="doc_s1_l3">Allez dans la section <strong>Batterie</strong>.</li>
+                <li data-i18n="doc_s1_l4">Cochez impérativement <strong>Non restreinte</strong> (ou "Aucune restriction").</li>
+            </ul>
+        </div>
+
+        <div class="doc-block">
+            <h3 style="color: var(--accent-color); margin-bottom: 1rem;" data-i18n="doc_s2_title">Étape 2 : Préparer Termux (Le Moteur)</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;" data-i18n="doc_s2_desc">Termux est une petite application qui va faire tourner notre serveur en tâche de fond.</p>
+            <ul class="step-list">
+                <li data-i18n="doc_s2_l1">Téléchargez Termux <strong>uniquement depuis le site officiel F-Droid</strong> <br><em style="font-size: 0.85rem; color: #ff5e00;">(Ne prenez surtout pas la version du Google Play Store, elle est obsolète et ne fonctionnera pas !)</em>.</li>
+                <li data-i18n="doc_s2_l2">Ouvrez Termux. Un écran noir avec du texte apparaît.</li>
+                <li data-i18n="doc_s2_l3">Tapez exactement cette ligne puis appuyez sur <strong>Entrée</strong> pour autoriser l'accès à vos fichiers :
+                    <div class="terminal">termux-setup-storage</div>
+                </li>
+                <li data-i18n="doc_s2_l4">Ensuite, tapez cette ligne et faites <strong>Entrée</strong> pour installer l'outil Node.js (tapez "y" si on vous pose une question) :
+                    <div class="terminal">pkg install nodejs</div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="doc-block">
+            <h3 style="color: var(--accent-color); margin-bottom: 1rem;" data-i18n="doc_s3_title">Étape 3 : Démarrer le serveur DMD FUSE</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;" data-i18n="doc_s3_desc">Maintenant que le moteur est prêt, on lance le script.</p>
+            <ul class="step-list">
+                <li data-i18n="doc_s3_l1">Téléchargez le fichier <strong>server.js</strong> (disponible en bas de cette page) et placez-le dans le dossier <strong>Téléchargements</strong> (Download) de votre appareil Android.</li>
+                <li data-i18n="doc_s3_l2">Retournez dans Termux, tapez cette ligne et faites <strong>Entrée</strong> pour aller dans le dossier :
+                    <div class="terminal">cd storage/shared/Download</div>
+                </li>
+                <li data-i18n="doc_s3_l3">Enfin, démarrez le serveur avec cette ligne + <strong>Entrée</strong> :
+                    <div class="terminal">node server.js</div>
+                </li>
+                <li data-i18n="doc_s3_l4"><strong>C'est bon !</strong> Un joli message "DMD FUSE ACTIVATED" apparaît. Laissez Termux ouvert en arrière-plan.</li>
+            </ul>
+        </div>
+
+        <div class="doc-block">
+            <h3 style="color: var(--accent-color); margin-bottom: 1rem;" data-i18n="doc_s4_title">Étape 4 : Régler VPX Standalone</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;" data-i18n="doc_s4_desc">Il faut dire à votre jeu d'envoyer son affichage vers notre nouveau serveur.</p>
+            <ul class="step-list">
+                <li data-i18n="doc_s4_l1">Lancez <strong>VPX Standalone</strong> pour Android.</li>
+                <li data-i18n="doc_s4_l2">Allez dans les <strong>Paramètres (Settings)</strong>, puis dans la section dédiée au <strong>DMD</strong>.</li>
+                <li data-i18n="doc_s4_l3">Dans le champ "IP Address", tapez exactement <strong>127.0.0.1</strong> <em>(Cela signifie "l'appareil lui-même" en langage réseau)</em>.</li>
+                <li data-i18n="doc_s4_l4">Vérifiez que le port est bien réglé sur <strong>6789</strong>.</li>
+            </ul>
+        </div>
+
+        <div class="doc-block">
+            <h3 style="color: var(--accent-color); margin-bottom: 1rem;" data-i18n="doc_s5_title">Étape 5 : Profitez avec l'application !</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;" data-i18n="doc_s5_desc">La touche finale pour afficher votre DMD sur votre Pincab.</p>
+            <ul class="step-list">
+                <li data-i18n="doc_s5_l1">Installez et ouvrez l'application <strong>DMD FUSE</strong> (le fichier .apk) sur votre écran de destination.</li>
+                <li data-i18n="doc_s5_l2">Dans la barre en haut, tapez <strong>127.0.0.1</strong> et cliquez sur Connexion.</li>
+                <li data-i18n="doc_s5_l3"><strong>Félicitations !</strong> Cliquez sur l'engrenage en bas à droite ⚙️ pour personnaliser votre image de fond (Backglass) et choisir entre la résolution Standard (128x32) ou HD (256x64).</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="download" style="text-align: center; padding-bottom: 4rem;">
+        <h2 class="section-title" data-i18n="dl_title">Téléchargements</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;" data-i18n="dl_desc">Récupérez les derniers fichiers pour mettre à jour votre borne.</p>
+        <a href="DMD_FUSE_v1.0.apk" class="btn" download>📥 DMD_FUSE.apk (Client)</a>
+        <br><br>
+        <a href="server.js" class="btn btn-outline" download>📄 server.js (Node Server)</a>
+    </section>
+
+    <footer>
+        <p data-i18n="footer">&copy; 2026 DMD FUSE — Créé avec passion pour la communauté Pincab & DIY.</p>
+    </footer>
+
+    <script>
+        const translations = {
+            fr: {
+                nav_about: "Le Projet",
+                nav_docs: "Installation",
+                nav_download: "Télécharger",
+                hero_title: "Allumez votre <span>DMD</span>.",
+                hero_subtitle: "L'interface Pincab ultime pour Android. Capturez le flux TCP brut de VPX Standalone et affichez vos matrices LED en temps réel avec un habillage custom de haute qualité.",
+                btn_dl_apk: "Télécharger l'APK",
+                btn_docs: "Voir la Doc",
+                about_title: "Conçu pour l'immersion",
+                about_p1: "DMD FUSE n'est pas qu'un simple afficheur. C'est le cœur visuel de votre borne d'arcade Android ou de votre setup Samsung DeX.",
+                about_p2: "Grâce à son serveur Node.js ultra-léger et son interprétation chirurgicale des paquets, les animations s'affichent avec une latence quasi-nulle, laissant le CPU libre pour la physique de votre bille.",
+                feat1_title: "⚡ TCP vers WebSockets",
+                feat1_desc: "Traduction en direct du signal natif de Visual Pinball X pour une intégration parfaite dans un WebView Android optimisé.",
+                feat2_title: "📺 Standard & HD Ready",
+                feat2_desc: "Basculez entre l'affichage matrice classique (128x32) et le format ColorDMD moderne (256x64) d'une simple pression sur l'écran.",
+                feat3_title: "🎨 Personnalisation Totale",
+                feat3_desc: "Uploadez vos propres backglasses (statiques ou animations MP4/GIF) directement depuis l'application pour habiller votre fronton.",
+                doc_title: "Guide d'installation pas-à-pas",
+                doc_subtitle: "Ce guide est conçu pour une installation <strong>100% Android</strong> (VPX Standalone + DMD FUSE sur le même appareil). Pas de panique si vous n'avez jamais codé, il suffit de suivre les étapes dans l'ordre !",
+                doc_s1_title: "Étape 1 : Empêcher Android de couper le système",
+                doc_s1_desc: "Android est programmé pour tuer les applications en arrière-plan afin d'économiser de la batterie. Il faut lui dire de laisser notre serveur tranquille.",
+                doc_s1_l1: "Allez dans les <strong>Paramètres</strong> de votre appareil Android, puis dans <strong>Applications</strong>.",
+                doc_s1_l2: "Cherchez et sélectionnez l'application <strong>Termux</strong> (que nous allons installer à l'étape suivante).",
+                doc_s1_l3: "Allez dans la section <strong>Batterie</strong>.",
+                doc_s1_l4: "Cochez impérativement <strong>Non restreinte</strong> (ou 'Aucune restriction').",
+                doc_s2_title: "Étape 2 : Préparer Termux (Le Moteur)",
+                doc_s2_desc: "Termux est une petite application qui va faire tourner notre serveur en tâche de fond.",
+                doc_s2_l1: "Téléchargez Termux <strong>uniquement depuis le site officiel F-Droid</strong> <br><em style='font-size: 0.85rem; color: #ff5e00;'>(Ne prenez surtout pas la version du Play Store, elle est obsolète !)</em>.",
+                doc_s2_l2: "Ouvrez Termux. Un écran noir avec du texte apparaît.",
+                doc_s2_l3: "Tapez exactement cette ligne puis appuyez sur <strong>Entrée</strong> pour autoriser l'accès à vos fichiers :<div class='terminal'>termux-setup-storage</div>",
+                doc_s2_l4: "Ensuite, tapez cette ligne et faites <strong>Entrée</strong> pour installer l'outil Node.js (tapez 'y' si on vous pose une question) :<div class='terminal'>pkg install nodejs</div>",
+                doc_s3_title: "Étape 3 : Démarrer le serveur DMD FUSE",
+                doc_s3_desc: "Maintenant que le moteur est prêt, on lance le script.",
+                doc_s3_l1: "Téléchargez le fichier <strong>server.js</strong> et placez-le dans le dossier <strong>Téléchargements</strong> (Download) de votre appareil.",
+                doc_s3_l2: "Retournez dans Termux, tapez cette ligne et faites <strong>Entrée</strong> pour aller dans le dossier :<div class='terminal'>cd storage/shared/Download</div>",
+                doc_s3_l3: "Enfin, démarrez le serveur avec cette ligne + <strong>Entrée</strong> :<div class='terminal'>node server.js</div>",
+                doc_s3_l4: "<strong>C'est bon !</strong> Laissez Termux ouvert en arrière-plan.",
+                doc_s4_title: "Étape 4 : Régler VPX Standalone",
+                doc_s4_desc: "Il faut dire à votre jeu d'envoyer son affichage vers notre nouveau serveur.",
+                doc_s4_l1: "Lancez <strong>VPX Standalone</strong> pour Android.",
+                doc_s4_l2: "Allez dans les <strong>Paramètres (Settings)</strong>, puis dans la section dédiée au <strong>DMD</strong>.",
+                doc_s4_l3: "Dans le champ 'IP Address', tapez exactement <strong>127.0.0.1</strong> <em>(Cela signifie 'l'appareil lui-même' en langage réseau)</em>.",
+                doc_s4_l4: "Vérifiez que le port est bien réglé sur <strong>6789</strong>.",
+                doc_s5_title: "Étape 5 : Profitez avec l'application !",
+                doc_s5_desc: "La touche finale pour afficher votre DMD sur votre Pincab.",
+                doc_s5_l1: "Installez et ouvrez l'application <strong>DMD FUSE</strong>.",
+                doc_s5_l2: "Dans la barre en haut, tapez <strong>127.0.0.1</strong> et cliquez sur Connexion.",
+                doc_s5_l3: "<strong>Félicitations !</strong> Cliquez sur l'engrenage en bas à droite ⚙️ pour personnaliser votre image de fond (Backglass) et choisir entre la résolution Standard (128x32) ou HD (256x64).",
+                dl_title: "Téléchargements",
+                dl_desc: "Récupérez les derniers fichiers pour mettre à jour votre borne.",
+                footer: "&copy; 2026 DMD FUSE — Créé avec passion pour la communauté Pincab & DIY."
+            },
+            en: {
+                nav_about: "About",
+                nav_docs: "Installation",
+                nav_download: "Download",
+                hero_title: "Ignite your <span>DMD</span>.",
+                hero_subtitle: "The ultimate Android Pincab interface. Capture the raw TCP stream from VPX Standalone and display your LED matrices in real-time with high-quality custom backglasses.",
+                btn_dl_apk: "Download APK",
+                btn_docs: "Read Docs",
+                about_title: "Built for Immersion",
+                about_p1: "DMD FUSE is more than a simple display. It's the visual heart of your Android arcade cabinet or Samsung DeX setup.",
+                about_p2: "Thanks to its ultra-light Node.js server and surgical packet interpretation, animations run with near-zero latency, leaving the CPU free for pinball physics.",
+                feat1_title: "⚡ TCP to WebSockets",
+                feat1_desc: "Live translation of the native Visual Pinball X signal for flawless integration into an optimized Android WebView.",
+                feat2_title: "📺 Standard & HD Ready",
+                feat2_desc: "Switch between classic matrix display (128x32) and modern ColorDMD format (256x64) with a single tap on the screen.",
+                feat3_title: "🎨 Full Customization",
+                feat3_desc: "Upload your own static backglasses or MP4/GIF animations directly from the app to dress up your backbox.",
+                doc_title: "Step-by-Step Installation",
+                doc_subtitle: "This guide is meant for a <strong>100% Android setup</strong> (VPX Standalone + DMD FUSE on the same device). No coding experience needed, just follow the steps!",
+                doc_s1_title: "Step 1: Prevent Android from killing the system",
+                doc_s1_desc: "Android is designed to kill background apps to save battery. We need to tell it to leave our server alone.",
+                doc_s1_l1: "Go to your Android device <strong>Settings</strong>, then <strong>Apps</strong>.",
+                doc_s1_l2: "Find and select the <strong>Termux</strong> app (which we will install in the next step).",
+                doc_s1_l3: "Go to the <strong>Battery</strong> section.",
+                doc_s1_l4: "Make sure to select <strong>Unrestricted</strong>.",
+                doc_s2_title: "Step 2: Prepare Termux (The Engine)",
+                doc_s2_desc: "Termux is a small app that will run our server in the background.",
+                doc_s2_l1: "Download Termux <strong>strictly from the official F-Droid website</strong> <br><em style='font-size: 0.85rem; color: #ff5e00;'>(Do not use the Google Play Store version, it is broken!)</em>.",
+                doc_s2_l2: "Open Termux. A black screen with text will appear.",
+                doc_s2_l3: "Type exactly this line and press <strong>Enter</strong> to allow file access:<div class='terminal'>termux-setup-storage</div>",
+                doc_s2_l4: "Next, type this line and press <strong>Enter</strong> to install Node.js (type 'y' if prompted):<div class='terminal'>pkg install nodejs</div>",
+                doc_s3_title: "Step 3: Start the DMD FUSE Server",
+                doc_s3_desc: "Now that the engine is ready, let's run the script.",
+                doc_s3_l1: "Download the <strong>server.js</strong> file and place it in your device's <strong>Downloads</strong> folder.",
+                doc_s3_l2: "Go back to Termux, type this line and press <strong>Enter</strong> to navigate to the folder:<div class='terminal'>cd storage/shared/Download</div>",
+                doc_s3_l3: "Finally, start the server with this line + <strong>Enter</strong>:<div class='terminal'>node server.js</div>",
+                doc_s3_l4: "<strong>All good!</strong> Leave Termux running in the background.",
+                doc_s4_title: "Step 4: Configure VPX Standalone",
+                doc_s4_desc: "We need to tell the game to send its display to our new server.",
+                doc_s4_l1: "Launch <strong>VPX Standalone</strong> for Android.",
+                doc_s4_l2: "Go to <strong>Settings</strong>, then to the <strong>DMD</strong> section.",
+                doc_s4_l3: "In the 'IP Address' field, type exactly <strong>127.0.0.1</strong> <em>(This means 'this local device' in networking terms)</em>.",
+                doc_s4_l4: "Ensure the port is set to <strong>6789</strong>.",
+                doc_s5_title: "Step 5: Enjoy the App!",
+                doc_s5_desc: "The final touch to display your DMD on your Pincab.",
+                doc_s5_l1: "Install and open the <strong>DMD FUSE</strong> app.",
+                doc_s5_l2: "In the top bar, type <strong>127.0.0.1</strong> and tap Connect.",
+                doc_s5_l3: "<strong>Congratulations!</strong> Tap the gear icon ⚙️ in the bottom right to customize your Backglass and choose between Standard (128x32) or HD (256x64) resolution.",
+                dl_title: "Downloads",
+                dl_desc: "Grab the latest files to update your cabinet.",
+                footer: "&copy; 2026 DMD FUSE — Crafted with passion for the Pincab & DIY community."
+            }
+        };
+
+        function setLang(lang) {
+            // Sauvegarder le choix
+            localStorage.setItem('dmd_lang', lang);
+            
+            // Changer la classe active sur les boutons
+            document.getElementById('btn-fr').classList.remove('active');
+            document.getElementById('btn-en').classList.remove('active');
+            document.getElementById('btn-' + lang).classList.add('active');
+
+            // Remplacer tous les textes ayant un attribut data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if(translations[lang][key]) {
+                    element.innerHTML = translations[lang][key];
+                }
+            });
+        }
+
+        // Vérifier la langue sauvegardée au chargement (ou détecter la langue du navigateur)
+        document.addEventListener('DOMContentLoaded', () => {
+            let savedLang = localStorage.getItem('dmd_lang');
+            if(!savedLang) {
+                const browserLang = navigator.language.slice(0, 2);
+                savedLang = (browserLang === 'fr') ? 'fr' : 'en';
+            }
+            setLang(savedLang);
+        });
+    </script>
+</body>
+</html>
